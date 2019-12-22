@@ -15,7 +15,7 @@ use sp_core::OpaqueMetadata;
 use sp_std::prelude::*;
 use sp_api::impl_runtime_apis;
 use sp_runtime::traits::{
-	self, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, StaticLookup, Verify,
+	self, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, StaticLookup, Verify, ConvertInto,
 };
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys, transaction_validity::TransactionValidity, ApplyExtrinsicResult,
@@ -170,7 +170,7 @@ impl indices::Trait for Runtime {
 	/// Use the standard means of resolving an index hint from an id.
 	type ResolveHint = indices::SimpleResolveHint<Self::AccountId, Self::AccountIndex>;
 	/// Determine whether an account is dead.
-	type IsDeadAccount = Example;
+	type IsDeadAccount = Balances;
 	/// The ubiquitous event type.
 	type Event = Event;
 }
@@ -186,42 +186,62 @@ impl timestamp::Trait for Runtime {
 	type MinimumPeriod = MinimumPeriod;
 }
 
+parameter_types! {
+	pub const ExistentialDeposit: u128 = 500;
+	pub const TransferFee: u128 = 0;
+	pub const CreationFee: u128 = 0;
+}
+
+impl balances::Trait for Runtime {
+	/// The type for recording an account's balance.
+	type Balance = Balance;
+	/// What to do if an account's free balance gets zeroed.
+	type OnFreeBalanceZero = ();
+	/// What to do if a new account is created.
+	type OnNewAccount = Indices;
+	/// The ubiquitous event type.
+	type Event = Event;
+	type DustRemoval = ();
+	type TransferPayment = ();
+	type ExistentialDeposit = ExistentialDeposit;
+	type TransferFee = TransferFee;
+	type CreationFee = CreationFee;
+}
+
+parameter_types! {
+	pub const TransactionBaseFee: Balance = 0;
+	pub const TransactionByteFee: Balance = 1;
+}
+
+impl transaction_payment::Trait for Runtime {
+	type Currency = balances::Module<Runtime>;
+	type OnTransactionPayment = ();
+	type TransactionBaseFee = TransactionBaseFee;
+	type TransactionByteFee = TransactionByteFee;
+	type WeightToFee = ConvertInto;
+	type FeeMultiplierUpdate = ();
+}
+
 impl sudo::Trait for Runtime {
 	type Event = Event;
 	type Proposal = Call;
 }
 
-mod crypto {
+pub mod crypto {
 	use sp_core::crypto::KeyTypeId;
 	pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"mint");
 
-	use sp_runtime::{AccountId32, app_crypto::{app_crypto, sr25519}};
+	use sp_runtime::app_crypto::{app_crypto, sr25519};
 	app_crypto!(sr25519, KEY_TYPE);
-
-	impl From<AccountId32> for Public {
-		fn from(a: AccountId32) -> Self {
-			a.into()
-		}
-	}
-
-	impl From<Public> for AccountId32 {
-		fn from(a: Public) -> Self {
-			a.into()
-		}
-	}
 }
 
-use crypto::Public as ExampleAuthority;
-
-type SubmitTransaction = submitter::TransactionSubmitter<ExampleAuthority, Runtime, UncheckedExtrinsic>;
+type SubmitTransaction = submitter::TransactionSubmitter<crypto::Public, Runtime, UncheckedExtrinsic>;
 
 impl example::Trait for Runtime {
 	type Event = Event;
 	type Call = Call;
 	/// Type for submitting transactions
 	type SubmitTransaction = SubmitTransaction;
-	/// Local accounts
-	type KeyType = ExampleAuthority;
 }
 
 impl offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
@@ -236,12 +256,14 @@ impl offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
 	) -> Option<(Call, <UncheckedExtrinsic as traits::Extrinsic>::SignaturePayload)> {
 		let period = 1 << 8;
 		let current_block = System::block_number() as u64;
+		let tip = 0;
 		let extra: SignedExtra = (
 			system::CheckVersion::<Runtime>::new(),
 			system::CheckGenesis::<Runtime>::new(),
 			system::CheckEra::<Runtime>::from(generic::Era::mortal(period, current_block)),
 			system::CheckNonce::<Runtime>::from(index),
 			system::CheckWeight::<Runtime>::new(),
+			transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
 		);
 		let raw_payload = SignedPayload::new(call, extra).ok()?;
 		let signature = TSigner::sign(public, &raw_payload)?;
@@ -262,9 +284,11 @@ construct_runtime!(
 		Aura: aura::{Module, Config<T>, Inherent(Timestamp)},
 		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
 		Indices: indices,
+		Balances: balances::{default, Error},
+		TransactionPayment: transaction_payment::{Module, Storage},
 		Sudo: sudo,
 		RandomnessCollectiveFlip: randomness_collective_flip::{Module, Call, Storage},
-		Example: example::{Module, Call, Storage, Event<T>, Config},
+		Example: example::{Module, Call, Storage, Event<T>, Config<T>},
 	}
 );
 
@@ -285,6 +309,7 @@ pub type SignedExtra = (
 	system::CheckEra<Runtime>,
 	system::CheckNonce<Runtime>,
 	system::CheckWeight<Runtime>,
+	transaction_payment::ChargeTransactionPayment<Runtime>,
 );
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;

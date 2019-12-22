@@ -83,6 +83,7 @@ pub fn new_full<C: Send + Default + 'static>(
 	let force_authoring = config.force_authoring;
 	let name = config.name.clone();
 	let disable_grandpa = config.disable_grandpa;
+	let dev_seed = config.dev_key_seed.clone();
 
 	// sentry nodes announce themselves as authorities to the network
 	// and should run the same protocols authorities do, but it should
@@ -129,6 +130,17 @@ pub fn new_full<C: Send + Default + 'static>(
 		// the AURA authoring task is considered essential, i.e. if it
 		// fails we take down the service with it.
 		service.spawn_essential_task(aura);
+	}
+
+	if let Some(seed) = dev_seed {
+		service
+			.keystore()
+			.write()
+			.insert_ephemeral_from_seed_by_type::<runtime::crypto::Pair>(
+				&seed,
+				runtime::crypto::KEY_TYPE,
+			)
+			.expect("Dev Seed always succeeds");
 	}
 
 	// if the node isn't actively participating in consensus then it doesn't

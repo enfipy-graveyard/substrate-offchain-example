@@ -4,7 +4,7 @@ use sp_std::prelude::Vec;
 use system::offchain::*;
 use system::*;
 
-type PublicOf<T, Call, X> = <<X as SubmitSignedTransaction<T, Call>>::CreateTransaction as CreateTransaction<
+pub type PublicOf<T, Call, X> = <<X as SubmitSignedTransaction<T, Call>>::CreateTransaction as CreateTransaction<
     T,
     <X as SubmitSignedTransaction<T, Call>>::Extrinsic,
 >>::Public;
@@ -27,46 +27,10 @@ pub trait SubmitAndSignTransaction<T: Trait, Call> {
     ///
     /// Returns both public keys and `AccountId`s of accounts that are available.
     /// Such accounts can later be used to sign a payload or send signed transactions.
-    fn find_local_keys(
-        accounts: Option<impl IntoIterator<Item = T::AccountId>>,
-    ) -> Vec<(T::AccountId, PublicOf<T, Call, Self::SignAndSubmit>)>;
+    fn get_local_keys() -> Vec<(T::AccountId, PublicOf<T, Call, Self::SignAndSubmit>)>;
 
-    /// Create and submit signed transactions from supported accounts.
-    ///
-    /// This method should intersect given list of accounts with the ones
-    /// supported locally and submit signed transaction containing given `Call`
-    /// with every of them.
-    ///
-    /// Returns a vector of results and account ids that were supported.
-    #[must_use]
-    fn submit_signed_from(
-        call: impl Into<Call> + Clone,
-        accounts: impl IntoIterator<Item = T::AccountId>,
-    ) -> Vec<(T::AccountId, Result<(), ()>)> {
-        let keys = Self::find_local_keys(Some(accounts));
-        keys.into_iter()
-            .map(|(account, pub_key)| {
-                let call = call.clone().into();
-                (account, Self::SignAndSubmit::sign_and_submit(call, pub_key))
-            })
-            .collect()
-    }
-
-    /// Create and submit signed transactions from all local accounts.
-    ///
-    /// This method submits a signed transaction from all local accounts
-    /// for given application crypto.
-    ///
-    /// Returns a vector of results and account ids that were supported.
-    #[must_use]
-    fn submit_signed(call: impl Into<Call> + Clone) -> Vec<(T::AccountId, Result<(), ()>)> {
-        let keys = Self::find_local_keys(None as Option<Vec<_>>);
-        keys.into_iter()
-            .map(|(account, pub_key)| {
-                let call = call.clone().into();
-                (account, Self::SignAndSubmit::sign_and_submit(call, pub_key))
-            })
-            .collect()
+    fn sign_and_submit(call: impl Into<Call>, public: PublicOf<T, Call, Self::SignAndSubmit>) -> Result<(), ()> {
+        Self::SignAndSubmit::sign_and_submit(call, public)
     }
 }
 
@@ -121,11 +85,9 @@ where
 {
     type SignAndSubmit = Self;
 
-    fn find_local_keys(
-        accounts: Option<impl IntoIterator<Item = T::AccountId>>,
-    ) -> Vec<(T::AccountId, PublicOf<T, Call, Self::SignAndSubmit>)> {
+    fn get_local_keys() -> Vec<(T::AccountId, PublicOf<T, Call, Self::SignAndSubmit>)> {
         // Convert app-specific keys into generic ones.
-        let local_accounts_and_keys = S::all()
+        S::all()
             .into_iter()
             .map(|app_key| {
                 // unwrap app-crypto
@@ -136,24 +98,6 @@ where
                 let account = signer_pub_key.clone().into_account();
                 (account, signer_pub_key)
             })
-            .collect::<Vec<_>>();
-
-        if let Some(accounts) = accounts {
-            let mut local_accounts_and_keys = local_accounts_and_keys;
-            // sort by accountId to allow bin-search.
-            local_accounts_and_keys.sort_by(|a, b| a.0.cmp(&b.0));
-
-            // get all the matching accounts
-            accounts
-                .into_iter()
-                .filter_map(|acc| {
-                    let idx = local_accounts_and_keys.binary_search_by(|a| a.0.cmp(&acc)).ok()?;
-                    local_accounts_and_keys.get(idx).cloned()
-                })
-                .collect()
-        } else {
-            // just return all account ids and keys
-            local_accounts_and_keys
-        }
+            .collect::<Vec<_>>()
     }
 }
