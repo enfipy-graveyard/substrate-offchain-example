@@ -1,0 +1,69 @@
+[package]
+name = "runtime"
+version = "2.0.0"
+authors = ["enfipy <enfipy@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+aura = { default-features = false, package = "pallet-aura", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+balances = { default-features = false, package = "pallet-balances", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+grandpa = { default-features = false, package = "pallet-grandpa", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+indices = { default-features = false, package = "pallet-indices", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+randomness-collective-flip = { default-features = false, package = "pallet-randomness-collective-flip", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sudo = { default-features = false, package = "pallet-sudo", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+system = { default-features = false, package = "frame-system", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+timestamp = { default-features = false, package = "pallet-timestamp", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+transaction-payment = { default-features = false, package = "pallet-transaction-payment", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+
+parking_lot = { version = "0.9.0", default-features = false, optional = true }
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+safe-mix = { version = "1.0.0", default-features = false }
+serde = { version = "1.0.101", optional = true, features = ["derive"] }
+frame-executive = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-api = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-block-builder = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-consensus-aura = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-inherents = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-io = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-offchain = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-session = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-transaction-pool = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-version = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+
+[build-dependencies]
+wasm-builder-runner = { package = "substrate-wasm-builder-runner", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f", version = "1.0.4" }
+
+[features]
+default = ["std"]
+std = [
+	"aura/std",
+	"balances/std",
+	"codec/std",
+	"frame-executive/std",
+	"frame-support/std",
+	"grandpa/std",
+	"indices/std",
+	"randomness-collective-flip/std",
+	"safe-mix/std",
+	"serde",
+	"sp-api/std",
+	"sp-block-builder/std",
+	"sp-consensus-aura/std",
+	"sp-core/std",
+	"sp-inherents/std",
+	"sp-io/std",
+	"sp-offchain/std",
+	"sp-runtime/std",
+	"sp-session/std",
+	"sp-std/std",
+	"sp-transaction-pool/std",
+	"sp-version/std",
+	"sudo/std",
+	"system/std",
+	"timestamp/std",
+	"transaction-payment/std",
+]
