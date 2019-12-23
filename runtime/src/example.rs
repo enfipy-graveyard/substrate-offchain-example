@@ -1,6 +1,7 @@
 use crate::submitter::SubmitAndSignTransaction;
 
 use frame_support::{debug, decl_event, decl_module, decl_storage, dispatch::DispatchResult};
+use sp_runtime::offchain::http;
 use sp_std::prelude::*;
 use system::ensure_signed;
 
@@ -52,7 +53,7 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-	pub fn offchain() {
+	fn offchain() {
 		let accounts = Self::authorized_accounts();
 		let key = T::SubmitTransaction::get_local_keys().iter().find_map(|i| {
 			if accounts.contains(&i.0) {
@@ -62,13 +63,41 @@ impl<T: Trait> Module<T> {
 			}
 		});
 		if key.is_none() {
-			debug::warn!("No authority account to submit mint");
+			debug::warn!("No authorized account");
 			return;
 		}
-		debug::warn!("Start mint submission logic");
+		debug::warn!("Start logic");
 
+		if let Ok(json) = Self::fetch_with_delay() {
+			debug::warn!("Fetched data: {}", core::str::from_utf8(&json).unwrap());
+		} else {
+			debug::warn!("Error fetching with delay.");
+			return
+		}
 		let call = Call::submit_from_offchain(Some(12_u64));
 		let res = T::SubmitTransaction::sign_and_submit(call, key.unwrap());
-		debug::warn!("Finished mint: {:?}", res);
+		debug::warn!("Finished: {:?}", res);
+	}
+
+	fn fetch_with_delay() -> Result<Vec<u8>, http::Error> {
+		let pending = http::Request::get(
+			"http://www.mocky.io/v2/5e0006ca2f0000780013b267?mocky-delay=3000ms",
+		)
+		.send()
+		.map_err(|_| http::Error::IoError)?;
+		let response = pending.wait()?;
+		if response.code != 200 {
+			debug::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown);
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		let json = match core::str::from_utf8(&body) {
+			Ok(json) => json,
+			_ => {
+				debug::warn!("Unexpected (non-utf8 or too short) response received: {:?}", body);
+				return Err(http::Error::Unknown);
+			}
+		};
+		Ok(json.as_bytes().to_vec())
 	}
 }
