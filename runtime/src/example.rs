@@ -5,7 +5,7 @@ use sp_runtime::offchain::http;
 use sp_std::prelude::*;
 use system::ensure_signed;
 
-pub trait Trait: timestamp::Trait {
+pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 	type Call: From<Call<Self>>;
 
@@ -99,5 +99,21 @@ impl<T: Trait> Module<T> {
 			}
 		};
 		Ok(json.as_bytes().to_vec())
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	// use super::*;
+	use crate::testing::*;
+
+	#[test]
+	fn it_works_for_default_value() {
+		let (mut ext, _state) = exec_with_offchain();
+		ext.execute_with(|| {
+			// Just a dummy test for the dummy funtion `do_something`
+			// calling the `do_something` function with a value 42
+			assert_eq!(Example::something(), vec![]);
+		});
 	}
 }

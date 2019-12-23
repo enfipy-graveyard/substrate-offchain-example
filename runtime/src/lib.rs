@@ -5,8 +5,9 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-pub mod submitter;
+pub mod testing;
 pub mod example;
+pub mod submitter;
 
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use grandpa::fg_primitives;
@@ -254,13 +255,13 @@ impl offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
 		account: AccountId,
 		index: Index,
 	) -> Option<(Call, <UncheckedExtrinsic as traits::Extrinsic>::SignaturePayload)> {
-		let period = 1 << 8;
-		let current_block = System::block_number() as u64;
+		// let period = 1 << 8;
+		// let current_block = System::block_number() as u64 + 1;
 		let tip = 0;
 		let extra: SignedExtra = (
 			system::CheckVersion::<Runtime>::new(),
 			system::CheckGenesis::<Runtime>::new(),
-			system::CheckEra::<Runtime>::from(generic::Era::mortal(period, current_block)),
+			system::CheckEra::<Runtime>::from(generic::Era::immortal()), // mortal(period, current_block)
 			system::CheckNonce::<Runtime>::from(index),
 			system::CheckWeight::<Runtime>::new(),
 			transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
