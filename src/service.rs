@@ -136,7 +136,7 @@ pub fn new_full<C: Send + Default + 'static>(
 		service
 			.keystore()
 			.write()
-			.insert_ephemeral_from_seed_by_type::<runtime::crypto::Pair>(
+			.insert_ephemeral_from_seed_by_type::<runtime::example::crypto::Pair>(
 				&seed,
 				runtime::example::crypto::KEY_TYPE,
 			)

@@ -141,8 +141,7 @@ fn testnet_genesis(
 				.collect(),
 		}),
 		example: Some(ExampleConfig {
-			authorized_accounts: endowed_accounts.clone(),
-			something: vec![],
+			authorities: endowed_accounts.clone(),
 		}),
 	}
 }
