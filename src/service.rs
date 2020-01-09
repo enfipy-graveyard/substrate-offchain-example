@@ -138,7 +138,7 @@ pub fn new_full<C: Send + Default + 'static>(
 			.write()
 			.insert_ephemeral_from_seed_by_type::<runtime::crypto::Pair>(
 				&seed,
-				runtime::crypto::KEY_TYPE,
+				runtime::example::crypto::KEY_TYPE,
 			)
 			.expect("Dev Seed always succeeds");
 	}

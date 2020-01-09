@@ -35,19 +35,16 @@ pub fn seal_block(state: Arc<parking_lot::RwLock<PoolState>>) -> Option<usize> {
     let block = System::block_number();
     System::set_block_number(block + 1);
     // run offchain
-    Example::offchain().expect("Failed to submit mint");
+    Example::offchain();
 
     // if there are any txs submitted to the queue, dispatch them
     let transactions = &mut state.write().transactions;
     let count = transactions.len();
     while let Some(t) = transactions.pop() {
         let e: Extrinsic = Decode::decode(&mut &*t).unwrap();
-        if e.0.is_none() {
-            let call = e.1;
-            // Todo: Fix with signed transaction
-            let _ = call.dispatch(Origin::signed(1)).unwrap();
-        }
-        // let (who, _) = e.0.expect("0");
+        let (who, _) = e.0.expect("Invalid transaction origin");
+        let call = e.1;
+        let _ = call.dispatch(Origin::signed(who.into())).unwrap();
     }
     Some(count)
 }

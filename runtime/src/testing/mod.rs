@@ -1,9 +1,11 @@
-// #![cfg(feature = "std")]
+#![cfg(feature = "std")]
 
-// mod methods;
-// mod mock;
-// mod types;
+mod authority;
+mod methods;
+mod mock;
+mod types;
 
-// pub use methods::*;
-// pub use mock::*;
-// pub use types::*;
+pub use authority::*;
+pub use methods::*;
+pub use mock::*;
+pub use types::*;

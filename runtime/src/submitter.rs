@@ -93,34 +93,3 @@ where
             .collect::<Vec<_>>()
     }
 }
-
-// /// A blanket implementation to support local keystore of application-crypto types.
-// impl<T, C, E, S, Call> SubmitAndSignTransaction<T, Call> for TransactionSubmitter<S, C, E>
-// where
-//     T: Trait,
-//     C: CreateTransaction<T, E>,
-//     E: ExtrinsicT<Call = Call> + codec::Encode,
-//     S: Signer<<C as CreateTransaction<T, E>>::Public, <C as CreateTransaction<T, E>>::Signature>,
-//     // Make sure we can unwrap the app crypto key.
-//     S: RuntimeAppPublic + Into<PublicOf<T, Call, Self>>,
-//     <C as CreateTransaction<T, E>>::Public: Into<PublicOf<T, Call, Self>>,
-//     // S::Public: Into<PublicOf<T, Call, Self>>,
-//     // For simplicity we require the same trait to implement `SubmitSignedTransaction` too.
-//     Self: SubmitSignedTransaction<T, Call, Signer = S, Extrinsic = E, CreateTransaction = C>,
-// {
-//     type SignAndSubmit = Self;
-
-//     fn get_local_keys() -> Vec<(T::AccountId, PublicOf<T, Call, Self::SignAndSubmit>)> {
-//         // Convert app-specific keys into generic ones.
-//         S::all()
-//             .into_iter()
-//             .map(|app_key| {
-//                 // convert to expected public key type (might be MultiSigner)
-//                 let signer_pub_key: PublicOf<T, Call, Self::SignAndSubmit> = app_key.into();
-//                 // lookup accountid for that pubkey
-//                 let account = signer_pub_key.clone().into_account();
-//                 (account, signer_pub_key)
-//             })
-//             .collect::<Vec<_>>()
-//     }
-// }

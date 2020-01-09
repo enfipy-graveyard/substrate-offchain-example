@@ -228,21 +228,10 @@ impl sudo::Trait for Runtime {
 	type Proposal = Call;
 }
 
-pub mod crypto {
-	use sp_core::crypto::KeyTypeId;
-	pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"mint");
-
-	use sp_runtime::app_crypto::{app_crypto, sr25519};
-	app_crypto!(sr25519, KEY_TYPE);
-}
-
-type SubmitTransaction = submitter::TransactionSubmitter<crypto::Public, Runtime, UncheckedExtrinsic>;
-
 impl example::Trait for Runtime {
 	type Event = Event;
 	type Call = Call;
-	/// Type for submitting transactions
-	type SubmitTransaction = SubmitTransaction;
+	type SubmitTransaction = submitter::TransactionSubmitter<example::crypto::Public, Runtime, UncheckedExtrinsic>;
 }
 
 impl offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
@@ -255,13 +244,11 @@ impl offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
 		account: AccountId,
 		index: Index,
 	) -> Option<(Call, <UncheckedExtrinsic as traits::Extrinsic>::SignaturePayload)> {
-		// let period = 1 << 8;
-		// let current_block = System::block_number() as u64 + 1;
 		let tip = 0;
 		let extra: SignedExtra = (
 			system::CheckVersion::<Runtime>::new(),
 			system::CheckGenesis::<Runtime>::new(),
-			system::CheckEra::<Runtime>::from(generic::Era::immortal()), // mortal(period, current_block)
+			system::CheckEra::<Runtime>::from(generic::Era::immortal()),
 			system::CheckNonce::<Runtime>::from(index),
 			system::CheckWeight::<Runtime>::new(),
 			transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),

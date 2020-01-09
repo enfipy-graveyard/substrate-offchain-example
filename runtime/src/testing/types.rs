@@ -1,7 +1,7 @@
 use frame_support::{weights::Weight, parameter_types};
 use sp_runtime::Perbill;
 
-pub type AccountId = u64;
+pub type AccountIndex = u64;
 pub type Balance = u128;
 
 parameter_types! {

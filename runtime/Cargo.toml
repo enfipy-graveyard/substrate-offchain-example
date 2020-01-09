@@ -16,6 +16,7 @@ system = { default-features = false, package = "frame-system", git = "https://gi
 timestamp = { default-features = false, package = "pallet-timestamp", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
 transaction-payment = { default-features = false, package = "pallet-transaction-payment", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
 
+rand = { version = "0.7.2", optional = true }
 parking_lot = { version = "0.9.0", default-features = false, optional = true }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 safe-mix = { version = "1.0.0", default-features = false }
@@ -33,6 +34,7 @@ sp-session = { default-features = false, git = "https://github.com/paritytech/su
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
 sp-transaction-pool = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
 sp-version = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
+sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f" }
 
 [build-dependencies]
 wasm-builder-runner = { package = "substrate-wasm-builder-runner", git = "https://github.com/paritytech/substrate.git", rev = "e267d210178e646996dffafb6cd0c8b9d4a4b87f", version = "1.0.4" }
@@ -40,6 +42,7 @@ wasm-builder-runner = { package = "substrate-wasm-builder-runner", git = "https:
 [features]
 default = ["std"]
 std = [
+	"rand",
 	"parking_lot",
 	"aura/std",
 	"balances/std",

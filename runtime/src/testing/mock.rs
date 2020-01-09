@@ -1,13 +1,13 @@
-use crate::testing::types::*;
+use crate::submitter::TransactionSubmitter;
+use crate::testing::{authority::UintAuthorityId, types::*};
 use crate::example;
 
 use sp_core::H256;
 use sp_runtime::{
-    testing::{Header, TestXt, UintAuthorityId},
-    traits::{IdentityLookup, BlakeTwo256},
+    testing::{Header, TestXt},
+    traits::{IdentityLookup, BlakeTwo256, Verify},
 };
 use frame_support::{impl_outer_origin, impl_outer_dispatch};
-use crate::submitter::TransactionSubmitter;
 
 pub type Extrinsic = TestXt<Call, ()>;
 pub type SubmitTransaction = TransactionSubmitter<UintAuthorityId, Call, Extrinsic>;
@@ -16,15 +16,17 @@ pub type SubmitTransaction = TransactionSubmitter<UintAuthorityId, Call, Extrins
 pub struct TestRuntime;
 
 impl system::offchain::CreateTransaction<TestRuntime, Extrinsic> for Call {
+	type Public = <UintAuthorityId as Verify>::Signer;
     type Signature = UintAuthorityId;
 
-    fn create_transaction<F: system::offchain::Signer<AccountId, Self::Signature>>(
+    fn create_transaction<F: system::offchain::Signer<Self::Public, Self::Signature>>(
         call: Call,
-        account: AccountId,
-        _index: AccountId,
+		_public: Self::Public,
+        account: Self::Public,
+        _index: AccountIndex,
     ) -> Option<(Call, <Extrinsic as sp_runtime::traits::Extrinsic>::SignaturePayload)> {
         let extra = ();
-        Some((call, (account, extra)))
+        Some((call, (account.into(), extra)))
     }
 }
 
@@ -35,7 +37,7 @@ impl system::Trait for TestRuntime {
     type BlockNumber = u64;
     type Hash = H256;
     type Hashing = BlakeTwo256;
-    type AccountId = AccountId;
+    type AccountId = UintAuthorityId;
     type Lookup = IdentityLookup<Self::AccountId>;
     type Header = Header;
     type Event = ();
@@ -44,6 +46,7 @@ impl system::Trait for TestRuntime {
     type MaximumBlockLength = MaximumBlockLength;
     type AvailableBlockRatio = AvailableBlockRatio;
     type Version = ();
+	type ModuleToIndex = ();
 }
 
 impl example::Trait for TestRuntime {

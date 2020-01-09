@@ -5,6 +5,14 @@ use sp_runtime::offchain::http;
 use sp_std::prelude::*;
 use system::ensure_signed;
 
+pub mod crypto {
+	use sp_core::crypto::KeyTypeId;
+	pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"mint");
+
+	use sp_runtime::app_crypto::{app_crypto, sr25519};
+	app_crypto!(sr25519, KEY_TYPE);
+}
+
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 	type Call: From<Call<Self>>;
@@ -53,7 +61,7 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-	fn offchain() {
+	pub fn offchain() {
 		let accounts = Self::authorized_accounts();
 		let key = T::SubmitTransaction::get_local_keys().iter().find_map(|i| {
 			if accounts.contains(&i.0) {
@@ -79,7 +87,7 @@ impl<T: Trait> Module<T> {
 		debug::warn!("Finished: {:?}", res);
 	}
 
-	fn fetch_with_delay() -> Result<Vec<u8>, http::Error> {
+	pub fn fetch_with_delay() -> Result<Vec<u8>, http::Error> {
 		let pending = http::Request::get(
 			"http://www.mocky.io/v2/5e0006ca2f0000780013b267?mocky-delay=3000ms",
 		)
