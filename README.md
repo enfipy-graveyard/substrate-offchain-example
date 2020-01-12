@@ -1,4 +1,4 @@
-# Example substrate node
+# Example substrate node with off-chain workers
 
 Example node with off-chain workers.
 
